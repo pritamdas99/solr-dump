@@ -7,51 +7,42 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientSetScheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/util/homedir"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
-	"kmodules.xyz/client-go/tools/clientcmd"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	dbc "kubedb.dev/db-client-go/solr"
-	"os"
-	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 )
 
 var (
-	kubeconfigPath = func() string {
-		kubecfg := os.Getenv("KUBECONFIG")
-		if kubecfg != "" {
-			return kubecfg
-		}
-		return filepath.Join(homedir.HomeDir(), ".kube", "config")
-	}()
-	kubeContext = ""
-	scm         = runtime.NewScheme()
+	scm = runtime.NewScheme()
 )
 
 func init() {
 	utilruntime.Must(clientSetScheme.AddToScheme(scm))
+	utilruntime.Must(api.AddToScheme(scm))
 }
 
 type SolrDump struct {
 	action     string
-	db         *api.Solr
 	slClient   dbc.SLClient
 	location   string
 	repository string
 }
 
 func NewSolrDump(action string, dbname string, namespace string, location string, repository string) (*SolrDump, error) {
-	config, err := clientcmd.BuildConfigFromContext(kubeconfigPath, kubeContext)
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		fmt.Println("Failed to get config")
+		fmt.Printf("Failed ti get config %s", config)
+		return nil, err
 	}
 	kc, err := client.New(config, client.Options{
 		Scheme: scm,
 		Mapper: nil,
 	})
 	if err != nil {
+		fmt.Println("failed to get client")
 		return nil, err
 	}
 	db := &api.Solr{}
@@ -71,7 +62,6 @@ func NewSolrDump(action string, dbname string, namespace string, location string
 	}
 	return &SolrDump{
 		action,
-		db,
 		slClient,
 		location,
 		repository,
@@ -110,12 +100,17 @@ func (dumper *SolrDump) backup() error {
 	}
 
 	for _, collection := range collectionList {
+		if collection == "kubedb-system" {
+			continue
+		}
+		fmt.Printf("backup collection %s", collection)
 		resp, err := dumper.slClient.BackupCollection(context.TODO(), collection, fmt.Sprintf("%s-backup", collection), dumper.location, dumper.repository)
 		if err != nil {
 			klog.Error(fmt.Sprintf("Failed to backup collection %s", collection))
 			return err
 		}
 		responseBody, err := dumper.slClient.DecodeResponse(resp)
+		klog.Infof(fmt.Sprintf("responsebody %v", responseBody))
 		if err != nil {
 			klog.Error(fmt.Sprintf("Failed to decode backup response body for collection %s", collection))
 			return err
