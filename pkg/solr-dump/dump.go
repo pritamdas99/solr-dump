@@ -3,6 +3,8 @@ package solr_dump
 import (
 	"context"
 	"fmt"
+	"github.com/pritamdas99/solr-dump/blob"
+	"github.com/pritamdas99/solr-dump/model"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -12,6 +14,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	dbc "kubedb.dev/db-client-go/solr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 	"time"
 )
 
@@ -34,7 +37,7 @@ type SolrDump struct {
 func NewSolrDump(action string, dbname string, namespace string, location string, repository string) (*SolrDump, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		fmt.Printf("Failed ti get config %s", config)
+		fmt.Printf("Failed to get config %s", config)
 		return nil, err
 	}
 	kc, err := client.New(config, client.Options{
@@ -71,6 +74,11 @@ func NewSolrDump(action string, dbname string, namespace string, location string
 func (dumper *SolrDump) Execute() {
 	if dumper.action == "backup" {
 		err := dumper.backup()
+		if err != nil {
+			klog.Error(err)
+		}
+	} else {
+		err := dumper.restore()
 		if err != nil {
 			klog.Error(err)
 		}
@@ -119,6 +127,62 @@ func (dumper *SolrDump) backup() error {
 		if err != nil {
 			klog.Error(fmt.Sprintf("status is non zero while listing collection"))
 			return err
+		}
+	}
+	return nil
+}
+
+func NewS3(prefix string) (model.Blob, error) {
+	bs := &model.BackupStorage{
+		Storage: model.Storage{
+			Provider: model.ProviderS3,
+			S3: &model.S3{
+				Bucket:   "pritamsolr",
+				Region:   "ap-south-1",
+				Endpoint: "https://ap-south-1.linodeobjects.com",
+				Prefix:   prefix,
+			},
+		},
+	}
+	return blob.NewBlob(bs)
+}
+
+func (dumper *SolrDump) restore() error {
+
+	s3b, err := NewS3("/hello")
+	if err != nil {
+		return err
+	}
+
+	list, err := s3b.List(context.TODO(), "/")
+	if err != nil {
+		return err
+	}
+	backupName := ""
+	collection := ""
+	for _, x := range list {
+		part := strings.Split(x, "/")
+		if part[0] != backupName && part[1] != collection {
+			backupName = part[0]
+			collection = part[1]
+			fmt.Println(backupName, collection)
+			resp, err := dumper.slClient.RestoreCollection(context.TODO(), collection, backupName, dumper.location, dumper.repository)
+			if err != nil {
+				klog.Error(fmt.Sprintf("Failed to backup collection %s", collection))
+				return err
+			}
+			responseBody, err := dumper.slClient.DecodeResponse(resp)
+			klog.Infof(fmt.Sprintf("responsebody %v", responseBody))
+			if err != nil {
+				klog.Error(fmt.Sprintf("Failed to decode backup response body for collection %s", collection))
+				return err
+			}
+			_, err = dumper.slClient.GetResponseStatus(responseBody)
+			if err != nil {
+				klog.Error(fmt.Sprintf("status is non zero while listing collection"))
+				return err
+			}
+
 		}
 	}
 	return nil
