@@ -31,12 +31,12 @@ func azureBlob(bs *model.BackupStorage) (*Blob, error) {
 
 func s3Blob(bs *model.BackupStorage) (*Blob, error) {
 	var storageUrl string
-	storageUrl = strings.Join([]string{s3Prefix, bs.Storage.S3.Bucket}, "")
+	storageUrl = s3Prefix + bs.Storage.S3.Bucket + "?s3ForcePathStyle=true"
 	if bs.Storage.S3.Region != "" {
-		storageUrl = strings.Join([]string{storageUrl, "?region=", bs.Storage.S3.Region}, "")
+		storageUrl += "&region=" + bs.Storage.S3.Region
 	}
 	if bs.Storage.S3.Endpoint != "" {
-		storageUrl = strings.Join([]string{storageUrl, "&endpoint=", bs.Storage.S3.Endpoint}, "")
+		storageUrl += "&endpoint=" + bs.Storage.S3.Endpoint
 	}
 	return &Blob{
 		storageURL: storageUrl,

@@ -79,11 +79,13 @@ func (b *Blob) List(ctx context.Context, dir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("bnucket opened")
 	defer closeBucket(bucket)
 	//var objects [][]byte
 	iter := bucket.List(nil)
 	var ss []string
 	for {
+		fmt.Println("what occurred")
 		obj, err := iter.Next(ctx)
 		if err == io.EOF {
 			break
@@ -91,6 +93,7 @@ func (b *Blob) List(ctx context.Context, dir string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("we are here")
 		if ifFileObject(obj) {
 			//fName := path.Join(dir, obj.Key)
 			//file, err := b.Get(ctx, fName)

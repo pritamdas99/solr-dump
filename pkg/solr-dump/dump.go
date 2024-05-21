@@ -137,9 +137,9 @@ func NewS3(prefix string) (model.Blob, error) {
 		Storage: model.Storage{
 			Provider: model.ProviderS3,
 			S3: &model.S3{
-				Bucket:   "pritamsolr",
-				Region:   "ap-south-1",
-				Endpoint: "https://ap-south-1.linodeobjects.com",
+				Bucket:   "solrbackup",
+				Region:   "us-east-1",
+				Endpoint: "http://proxy-svc.demo.svc:80",
 				Prefix:   prefix,
 			},
 		},
@@ -149,15 +149,18 @@ func NewS3(prefix string) (model.Blob, error) {
 
 func (dumper *SolrDump) restore() error {
 
-	s3b, err := NewS3("/hello")
+	s3b, err := NewS3("/")
 	if err != nil {
 		return err
 	}
 
-	list, err := s3b.List(context.TODO(), "/")
+	fmt.Println("passed it")
+
+	list, err := s3b.List(context.TODO(), "/solrbackup")
 	if err != nil {
 		return err
 	}
+	fmt.Println(list)
 	backupName := ""
 	collection := ""
 	for _, x := range list {
