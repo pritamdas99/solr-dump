@@ -582,7 +582,9 @@ gocloud.dev/aws
 gocloud.dev/blob
 gocloud.dev/blob/azureblob
 gocloud.dev/blob/driver
+gocloud.dev/blob/fileblob
 gocloud.dev/blob/gcsblob
+gocloud.dev/blob/memblob
 gocloud.dev/blob/s3blob
 gocloud.dev/gcerrors
 gocloud.dev/gcp
@@ -1173,7 +1175,7 @@ kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb
 kubedb.dev/apimachinery/apis/kubedb/v1alpha2
 kubedb.dev/apimachinery/crds
-# kubedb.dev/db-client-go v0.0.16-0.20240517095502-0091de0cfc51
+# kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102
 ## explicit; go 1.22.0
 kubedb.dev/db-client-go/solr
 # kubeops.dev/petset v0.0.5
@@ -1184,7 +1186,7 @@ kubeops.dev/petset/client/clientset/versioned/typed/apps/v1
 kubeops.dev/petset/client/listers/apps/v1
 kubeops.dev/petset/crds
 kubeops.dev/petset/pkg/features
-# sigs.k8s.io/controller-runtime v0.17.3
+# sigs.k8s.io/controller-runtime v0.17.4
 ## explicit; go 1.21
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder

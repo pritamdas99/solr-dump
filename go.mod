@@ -12,8 +12,8 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/klog/v2 v2.120.1
 	kubedb.dev/apimachinery v0.45.1
-	kubedb.dev/db-client-go v0.0.16-0.20240517095502-0091de0cfc51
-	sigs.k8s.io/controller-runtime v0.17.3
+	kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102
+	sigs.k8s.io/controller-runtime v0.17.4
 )
 
 require (

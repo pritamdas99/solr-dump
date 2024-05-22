@@ -5,6 +5,8 @@ package main
 
 import (
 	cmds "github.com/pritamdas99/solr-dump/pkg/cmd"
+	_ "gocloud.dev/blob/fileblob"
+	_ "gocloud.dev/blob/memblob"
 	"k8s.io/klog/v2"
 )
 
@@ -14,4 +16,5 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		klog.Warning(err)
 	}
+
 }

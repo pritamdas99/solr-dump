@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pritamdas99/solr-dump/model"
 	"io"
+	"os"
 	"path"
 	"strings"
 
@@ -30,27 +31,6 @@ func NewBlob(bs *model.BackupStorage) (*Blob, error) {
 	default:
 		return nil, fmt.Errorf("unknown provider: %s", bs.Storage.Provider)
 	}
-}
-func (b *Blob) Upload(ctx context.Context, filepath string, data []byte) error {
-	dir, filename := path.Split(filepath)
-	bucket, err := b.openBucket(ctx, dir)
-	if err != nil {
-		return err
-	}
-	defer closeBucket(bucket)
-	w, err := bucket.NewWriter(ctx, filename, nil)
-	if err != nil {
-		return err
-	}
-	_, writeErr := w.Write(data)
-	closeErr := w.Close()
-	if writeErr != nil {
-		return writeErr
-	}
-	if closeErr != nil {
-		return closeErr
-	}
-	return closeErr
 }
 
 func (b *Blob) Get(ctx context.Context, filepath string) ([]byte, error) {
@@ -79,13 +59,10 @@ func (b *Blob) List(ctx context.Context, dir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("bnucket opened")
 	defer closeBucket(bucket)
-	//var objects [][]byte
+	var objects []string
 	iter := bucket.List(nil)
-	var ss []string
 	for {
-		fmt.Println("what occurred")
 		obj, err := iter.Next(ctx)
 		if err == io.EOF {
 			break
@@ -93,67 +70,16 @@ func (b *Blob) List(ctx context.Context, dir string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("we are here")
 		if ifFileObject(obj) {
-			//fName := path.Join(dir, obj.Key)
+			fName := path.Join(dir, obj.Key)
 			//file, err := b.Get(ctx, fName)
 			//if err != nil {
 			//	return nil, err
 			//}
-			//objects = append(objects, file)
-			ss = append(ss, obj.Key)
+			objects = append(objects, fName)
 		}
 	}
-	return ss, nil
-}
-
-func (b *Blob) Delete(ctx context.Context, filepath string, isDir bool) error {
-	if isDir {
-		return b.deleteDir(ctx, filepath)
-	}
-	dir, filename := path.Split(filepath)
-	bucket, err := b.openBucket(ctx, dir)
-	if err != nil {
-		return err
-	}
-	defer closeBucket(bucket)
-	return bucket.Delete(ctx, filename)
-}
-
-func (b *Blob) deleteDir(ctx context.Context, dir string) error {
-	bucket, err := b.openBucket(ctx, dir)
-	if err != nil {
-		return err
-	}
-	defer closeBucket(bucket)
-	var deleteErrs []string
-	iter := bucket.List(nil)
-	for {
-		obj, err := iter.Next(ctx)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		filePath := strings.Join([]string{dir, "/", obj.Key}, "")
-		err = b.Delete(ctx, filePath, false)
-		if err != nil {
-			deleteErrs = append(deleteErrs, err.Error())
-		}
-	}
-	return fmt.Errorf(strings.Join(deleteErrs, "; "))
-
-}
-
-func (b *Blob) Exists(ctx context.Context, filepath string) (bool, error) {
-	dir, filename := path.Split(filepath)
-	bucket, err := b.openBucket(ctx, dir)
-	if err != nil {
-		return false, err
-	}
-	defer closeBucket(bucket)
-	return bucket.Exists(ctx, filename)
+	return objects, nil
 }
 
 func (b *Blob) openBucket(ctx context.Context, dir string) (*blob.Bucket, error) {
@@ -161,7 +87,11 @@ func (b *Blob) openBucket(ctx context.Context, dir string) (*blob.Bucket, error)
 	if err != nil {
 		return nil, err
 	}
-	return blob.PrefixedBucket(bucket, strings.Trim(path.Join(b.prefix, dir), "/")+"/"), nil
+	suffix := strings.Trim(path.Join(b.prefix, dir), "/") + "/"
+	if suffix == string(os.PathSeparator) {
+		return bucket, nil
+	}
+	return blob.PrefixedBucket(bucket, suffix), nil
 }
 
 func ifFileObject(obj *blob.ListObject) bool {

@@ -747,13 +747,13 @@ kmodules.xyz/offshoot-api v0.29.2 h1:akXmvkNqFz1n9p1STVs9iP7ODYET0S7BhcYCMXEjK4A
 kmodules.xyz/offshoot-api v0.29.2/go.mod h1:Wv7Xo8wbvznI+8bhaylRFHFjkt30xRDOUOnqV8kOAxM=
 kubedb.dev/apimachinery v0.45.1 h1:J5hzWF5tXeI6uwTwz9Uyi0CJdLB2CCmUvoFMngKRnas=
 kubedb.dev/apimachinery v0.45.1/go.mod h1:mVmsjSF2KmJzFrIx0rZo9KWee/zUcYmw8OqgcuvR2TA=
-kubedb.dev/db-client-go v0.0.16-0.20240517095502-0091de0cfc51 h1:k6cxmDRwJpswb2NthMmdi9/9+QDbam5chok2mSu4/L8=
-kubedb.dev/db-client-go v0.0.16-0.20240517095502-0091de0cfc51/go.mod h1:8DYpQ+RK1BCoeldmCqHO1RaG1ADQBcYOQzcVU84cetg=
+kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102 h1:54VRWigjR4ZGK6f9vqyemV0NqEdh29soT48YDztx1Y8=
+kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102/go.mod h1:8HPbu00HYw+WG3T7ecJirDEMlDmZFyDk5gciIa9W8ZU=
 kubeops.dev/petset v0.0.5 h1:VVXi39JhjondlbHyZ98z0MLp6VCmiCMinL59K48Y2zA=
 kubeops.dev/petset v0.0.5/go.mod h1:ijtKT1HlAht2vBEZj5LW7C00XEs3B0d1VdCQgd5V4cA=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
-sigs.k8s.io/controller-runtime v0.17.3 h1:65QmN7r3FWgTxDMz9fvGnO1kbf2nu+acg9p2R9oYYYk=
-sigs.k8s.io/controller-runtime v0.17.3/go.mod h1:N0jpP5Lo7lMTF9aL56Z/B2oWBJjey6StQM0jRbKQXtY=
+sigs.k8s.io/controller-runtime v0.17.4 h1:AMf1E0+93/jLQ13fb76S6Atwqp24EQFCmNbG84GJxew=
+sigs.k8s.io/controller-runtime v0.17.4/go.mod h1:N0jpP5Lo7lMTF9aL56Z/B2oWBJjey6StQM0jRbKQXtY=
 sigs.k8s.io/gateway-api v0.8.0 h1:isQQ3Jx2qFP7vaA3ls0846F0Amp9Eq14P08xbSwVbQg=
 sigs.k8s.io/gateway-api v0.8.0/go.mod h1:okOnjPNBFbIS/Rw9kAhuIUaIkLhTKEu+ARIuXk2dgaM=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=

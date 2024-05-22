@@ -35,6 +35,9 @@ type SolrDump struct {
 }
 
 func NewSolrDump(action string, dbname string, namespace string, location string, repository string) (*SolrDump, error) {
+	if action != "restore" {
+		action = "backup"
+	}
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		fmt.Printf("Failed to get config %s", config)
@@ -71,6 +74,26 @@ func NewSolrDump(action string, dbname string, namespace string, location string
 	}, nil
 }
 
+func (dumper *SolrDump) flushStatus(asyncId string) error {
+	resp, err := dumper.slClient.FlushStatus(asyncId)
+	if err != nil {
+		return err
+	}
+
+	responseBody, err := dumper.slClient.DecodeResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	_, err = dumper.slClient.GetResponseStatus(responseBody)
+	if err != nil {
+		klog.Error(fmt.Sprintf("status is non zero while listing collection"))
+		return err
+	}
+
+	return nil
+}
+
 func (dumper *SolrDump) Execute() {
 	if dumper.action == "backup" {
 		err := dumper.backup()
@@ -83,6 +106,61 @@ func (dumper *SolrDump) Execute() {
 			klog.Error(err)
 		}
 	}
+}
+
+func (dumper *SolrDump) checkStatus(collections []string) int {
+	fl := 0
+
+	for _, collection := range collections {
+		if collection == "kubedb-system" {
+			continue
+		}
+		asyncId := fmt.Sprintf("%s-%s", collection, dumper.action)
+		resp, err := dumper.slClient.RequestStatus(asyncId)
+		if err != nil {
+			klog.Error(fmt.Sprintf("Failed to get response for asyncId %s. Error: %v", asyncId, err))
+			continue
+		}
+
+		responseBody, err := dumper.slClient.DecodeResponse(resp)
+		if err != nil {
+			klog.Error(fmt.Sprintf("Failed to decode response for asyncId %s. Error: %v", asyncId, err))
+			continue
+		}
+
+		_, err = dumper.slClient.GetResponseStatus(responseBody)
+		if err != nil {
+			klog.Error(fmt.Sprintf("status is non zero while checking status for asyncId %s. Error %v", asyncId, err))
+			continue
+		}
+
+		state, err := dumper.slClient.GetAsyncStatus(responseBody)
+		if err != nil {
+			klog.Error(fmt.Sprintf("status is non zero while checking state of async for asyncId %s. Error %v", asyncId, err))
+			continue
+		}
+		if state == "completed" {
+			klog.Info(fmt.Sprintf("API call for asyncId %s completed.", asyncId))
+			err := dumper.flushStatus(asyncId)
+			if err != nil {
+				klog.Error(fmt.Sprintf("Failed to flush api call for asyncId %s. Error %v", asyncId, err))
+			}
+			collection = "kubedb-system"
+		} else if state == "failed" {
+			klog.Info(fmt.Sprintf("API call for asyncId %s failed", asyncId))
+			err := dumper.flushStatus(asyncId)
+			if err != nil {
+				klog.Error(fmt.Sprintf("Failed to flush api call for asyncId %s. Error %v", asyncId, err))
+			}
+			collection = "kubedb-system"
+		} else if state == "notfound" {
+			klog.Info(fmt.Sprintf("API call for asyncid %s not found", asyncId))
+			collection = "kubedb-system"
+		} else {
+			fl = 1
+		}
+	}
+	return fl
 }
 
 func (dumper *SolrDump) backup() error {
@@ -129,6 +207,15 @@ func (dumper *SolrDump) backup() error {
 			return err
 		}
 	}
+
+	for {
+		fl := dumper.checkStatus(collectionList)
+		if fl == 0 {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+
 	return nil
 }
 
@@ -154,21 +241,19 @@ func (dumper *SolrDump) restore() error {
 		return err
 	}
 
-	fmt.Println("passed it")
-
-	list, err := s3b.List(context.TODO(), "/solrbackup")
+	list, err := s3b.List(context.TODO(), "/")
 	if err != nil {
 		return err
 	}
-	fmt.Println(list)
+	var collectionList []string
 	backupName := ""
 	collection := ""
 	for _, x := range list {
-		part := strings.Split(x, "/")
+		part := strings.Split(strings.Trim(x, "/"), "/")
 		if part[0] != backupName && part[1] != collection {
 			backupName = part[0]
 			collection = part[1]
-			fmt.Println(backupName, collection)
+			collectionList = append(collectionList, collection)
 			resp, err := dumper.slClient.RestoreCollection(context.TODO(), collection, backupName, dumper.location, dumper.repository)
 			if err != nil {
 				klog.Error(fmt.Sprintf("Failed to backup collection %s", collection))
@@ -188,5 +273,14 @@ func (dumper *SolrDump) restore() error {
 
 		}
 	}
+
+	for {
+		fl := dumper.checkStatus(collectionList)
+		if fl == 0 {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+
 	return nil
 }

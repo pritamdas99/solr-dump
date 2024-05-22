@@ -5,11 +5,8 @@ import "context"
 type Provider string
 
 type Blob interface {
-	Upload(ctx context.Context, filepath string, data []byte) error
 	Get(ctx context.Context, filepath string) ([]byte, error)
 	List(ctx context.Context, dir string) ([]string, error)
-	Delete(ctx context.Context, filepath string, isDir bool) error
-	Exists(ctx context.Context, filepath string) (bool, error)
 }
 
 const (
