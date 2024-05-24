@@ -5,6 +5,7 @@ go 1.22.1
 require (
 	github.com/spf13/cobra v1.8.0
 	gocloud.dev v0.37.0
+	golang.org/x/sync v0.7.0
 	gomodules.xyz/flags v0.1.3
 	gomodules.xyz/runtime v0.3.0
 	gomodules.xyz/x v0.0.17
@@ -12,7 +13,7 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/klog/v2 v2.120.1
 	kubedb.dev/apimachinery v0.45.1
-	kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102
+	kubedb.dev/db-client-go v0.0.16-0.20240524112407-32a4e8321763
 	sigs.k8s.io/controller-runtime v0.17.4
 )
 
@@ -118,7 +119,6 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

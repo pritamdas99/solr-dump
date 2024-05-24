@@ -2,9 +2,11 @@ package solr_dump
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/pritamdas99/solr-dump/blob"
 	"github.com/pritamdas99/solr-dump/model"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -185,35 +187,41 @@ func (dumper *SolrDump) backup() error {
 		return err
 	}
 
+	g := new(errgroup.Group)
+
 	for _, collection := range collectionList {
 		if collection == "kubedb-system" {
 			continue
 		}
-		fmt.Printf("backup collection %s", collection)
-		resp, err := dumper.slClient.BackupCollection(context.TODO(), collection, fmt.Sprintf("%s-backup", collection), dumper.location, dumper.repository)
-		if err != nil {
-			klog.Error(fmt.Sprintf("Failed to backup collection %s", collection))
-			return err
-		}
-		responseBody, err := dumper.slClient.DecodeResponse(resp)
-		klog.Infof(fmt.Sprintf("responsebody %v", responseBody))
-		if err != nil {
-			klog.Error(fmt.Sprintf("Failed to decode backup response body for collection %s", collection))
-			return err
-		}
-		_, err = dumper.slClient.GetResponseStatus(responseBody)
-		if err != nil {
-			klog.Error(fmt.Sprintf("status is non zero while listing collection"))
-			return err
-		}
+		g.Go(func() error {
+			klog.Info(fmt.Sprintf("BACKUP COLLECTION %s\n", collection))
+			resp, err := dumper.slClient.BackupCollection(context.TODO(), collection, fmt.Sprintf("%s-backup", collection), dumper.location, dumper.repository)
+			if err != nil {
+				klog.Error(fmt.Sprintf("Failed to backup collection %s", collection))
+				return err
+			}
+			responseBody, err := dumper.slClient.DecodeResponse(resp)
+			if err != nil {
+				klog.Error(fmt.Sprintf("Failed to decode backup response body for collection %s", collection))
+				return err
+			}
+			_, err = dumper.slClient.GetResponseStatus(responseBody)
+			if err != nil {
+				klog.Error(fmt.Sprintf("status is non zero while listing collection"))
+				return err
+			}
+
+			b, err := json.MarshalIndent(responseBody, "", " ")
+			if err != nil {
+				klog.Error(fmt.Sprintf("Could not format response for collection %s into json", collection))
+			}
+			klog.Infof(fmt.Sprintf("responsebody %v", string(b)))
+			return nil
+		})
 	}
 
-	for {
-		fl := dumper.checkStatus(collectionList)
-		if fl == 0 {
-			break
-		}
-		time.Sleep(10 * time.Second)
+	if err := g.Wait(); err == nil {
+		fmt.Println("Successfully took backup.")
 	}
 
 	return nil
@@ -245,41 +253,55 @@ func (dumper *SolrDump) restore() error {
 	if err != nil {
 		return err
 	}
-	var collectionList []string
 	backupName := ""
 	collection := ""
+	var arr [][2]string
 	for _, x := range list {
 		part := strings.Split(strings.Trim(x, "/"), "/")
-		if part[0] != backupName && part[1] != collection {
-			backupName = part[0]
-			collection = part[1]
-			collectionList = append(collectionList, collection)
+		if part[0] == backupName || part[1] == collection {
+			continue
+		}
+		backupName = part[0]
+		collection = part[1]
+		ar := [2]string{part[0], part[1]}
+		arr = append(arr, ar)
+	}
+	for _, x := range arr {
+		fmt.Println(x)
+	}
+	g := new(errgroup.Group)
+	for _, x := range arr {
+		g.Go(func() error {
+			backupName := x[0]
+			collection := x[1]
+			klog.Info(fmt.Sprintf("RESTORE COLLECTION %s\n", collection))
+			klog.Info(fmt.Sprintf("an api call with %s %s gone", collection, backupName))
 			resp, err := dumper.slClient.RestoreCollection(context.TODO(), collection, backupName, dumper.location, dumper.repository)
 			if err != nil {
 				klog.Error(fmt.Sprintf("Failed to backup collection %s", collection))
 				return err
 			}
 			responseBody, err := dumper.slClient.DecodeResponse(resp)
-			klog.Infof(fmt.Sprintf("responsebody %v", responseBody))
 			if err != nil {
 				klog.Error(fmt.Sprintf("Failed to decode backup response body for collection %s", collection))
 				return err
 			}
 			_, err = dumper.slClient.GetResponseStatus(responseBody)
 			if err != nil {
-				klog.Error(fmt.Sprintf("status is non zero while listing collection"))
+				klog.Error(fmt.Sprintf("status is non zero while restore collection %s\n", collection))
 				return err
 			}
-
-		}
+			b, err := json.MarshalIndent(responseBody, "", " ")
+			if err != nil {
+				klog.Error(fmt.Sprintf("Could not format response for collection %s into json", collection))
+			}
+			klog.Infof(fmt.Sprintf("responsebody %v", string(b)))
+			return nil
+		})
 	}
 
-	for {
-		fl := dumper.checkStatus(collectionList)
-		if fl == 0 {
-			break
-		}
-		time.Sleep(10 * time.Second)
+	if err := g.Wait(); err == nil {
+		fmt.Println("Successfully restored all collections.")
 	}
 
 	return nil

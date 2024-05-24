@@ -536,8 +536,9 @@ golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.1.0/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.3.0/go.mod h1:FU7BRWz2tNW+3quACPkgCx/L+uEAv1htQ0V83Z9Rj+Y=
-golang.org/x/sync v0.6.0 h1:5BMeUDZ7vkXGfEr1x9B4bRcTH4lpkTkpdh0T/J+qjbQ=
 golang.org/x/sync v0.6.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
+golang.org/x/sync v0.7.0 h1:YsImfSBoP9QPYL0xyKJPq0gcaJdG3rInoqxTWbfQu9M=
+golang.org/x/sync v0.7.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
 golang.org/x/sys v0.0.0-20180823144017-11551d06cbcc/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20180830151530-49385e6e1522/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20180905080454-ebe1bf3edb33/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
@@ -747,8 +748,8 @@ kmodules.xyz/offshoot-api v0.29.2 h1:akXmvkNqFz1n9p1STVs9iP7ODYET0S7BhcYCMXEjK4A
 kmodules.xyz/offshoot-api v0.29.2/go.mod h1:Wv7Xo8wbvznI+8bhaylRFHFjkt30xRDOUOnqV8kOAxM=
 kubedb.dev/apimachinery v0.45.1 h1:J5hzWF5tXeI6uwTwz9Uyi0CJdLB2CCmUvoFMngKRnas=
 kubedb.dev/apimachinery v0.45.1/go.mod h1:mVmsjSF2KmJzFrIx0rZo9KWee/zUcYmw8OqgcuvR2TA=
-kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102 h1:54VRWigjR4ZGK6f9vqyemV0NqEdh29soT48YDztx1Y8=
-kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102/go.mod h1:8HPbu00HYw+WG3T7ecJirDEMlDmZFyDk5gciIa9W8ZU=
+kubedb.dev/db-client-go v0.0.16-0.20240524112407-32a4e8321763 h1:Wug0DiQ7nfjfJO8WijxI/h2PGRFeiCTxxT2PGirwKWQ=
+kubedb.dev/db-client-go v0.0.16-0.20240524112407-32a4e8321763/go.mod h1:8HPbu00HYw+WG3T7ecJirDEMlDmZFyDk5gciIa9W8ZU=
 kubeops.dev/petset v0.0.5 h1:VVXi39JhjondlbHyZ98z0MLp6VCmiCMinL59K48Y2zA=
 kubeops.dev/petset v0.0.5/go.mod h1:ijtKT1HlAht2vBEZj5LW7C00XEs3B0d1VdCQgd5V4cA=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=

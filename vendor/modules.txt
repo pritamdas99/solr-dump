@@ -629,8 +629,9 @@ golang.org/x/oauth2/google/internal/stsexchange
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.6.0
+# golang.org/x/sync v0.7.0
 ## explicit; go 1.18
+golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.18.0
 ## explicit; go 1.18
@@ -1175,7 +1176,7 @@ kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb
 kubedb.dev/apimachinery/apis/kubedb/v1alpha2
 kubedb.dev/apimachinery/crds
-# kubedb.dev/db-client-go v0.0.16-0.20240522120629-38326a675102
+# kubedb.dev/db-client-go v0.0.16-0.20240524112407-32a4e8321763
 ## explicit; go 1.22.0
 kubedb.dev/db-client-go/solr
 # kubeops.dev/petset v0.0.5
